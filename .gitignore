@@ -1,0 +1,17 @@
+# Ignore obj and bin directories
+**/obj/
+**/bin/
+**/node_modules/
+
+# Ignore Visual Studio for Mac/Windows folder
+**/.idea/
+**/.vscode/
+.vs/
+.vs2019/
+.vs2017/
+
+# User-specific files
+*.user
+*.userosscache
+*.suo
+*.sln.docstates

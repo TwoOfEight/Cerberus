@@ -41,7 +41,7 @@ public class AuthenticationController : Controller
             return Unauthorized();
         }
 
-        JwtSecurityToken token = GenerateJwt(model.Username);
+        var token = GenerateJwt(model.Username);
 
         var refreshToken = GenerateRefreshToken();
 
