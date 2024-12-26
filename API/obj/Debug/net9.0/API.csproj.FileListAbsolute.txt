@@ -156,3 +156,4 @@
 /home/merovingian/Documents/projects/Cerberus/API/obj/Debug/net9.0/ref/API.dll
 /home/merovingian/Documents/projects/Cerberus/API/bin/Debug/net9.0/Npgsql.dll
 /home/merovingian/Documents/projects/Cerberus/API/bin/Debug/net9.0/Npgsql.EntityFrameworkCore.PostgreSQL.dll
+/home/merovingian/Documents/projects/Cerberus/API/obj/Debug/net9.0/API.sourcelink.json
