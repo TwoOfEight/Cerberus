@@ -94,20 +94,20 @@ export class RegisterComponent {
 
       this.authService.register(formData).subscribe(
         (response) => {
-          this.navigator.getHome(100);
+          this.navigator.getHome(200);
         },
         (error) => {
           this.notFound();
         }
       );
 
-      this.router.navigateByUrl(ClientEndpoint.Home());
+      this.router.navigateByUrl(ClientEndpoint.home);
     }
   }
 
   cancel() {
     this.cancelRegister.emit(false);
-    this.router.navigateByUrl(ClientEndpoint.Home());
+    this.router.navigateByUrl(ClientEndpoint.home);
   }
 
   notFound() {

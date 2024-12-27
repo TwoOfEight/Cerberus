@@ -85,7 +85,7 @@ export class LoginComponent {
       const formData: LoginRequest = this.loginForm.value;
       this.authenticationService.login(formData).subscribe({
         next: () => {
-          this.navigator.getHome(1000);
+          this.navigator.getHome(200);
         },
         error: () => {
           this.notFound();
