@@ -9,6 +9,8 @@ public class TimeOffEntity
     [StringLength(256)]
     public required Guid UserId { get; set; }
     
+    public UserEntity User { get; set; }  // Navigation property 
+    
     public DateTime StartDate { get; set; }
     
     public DateTime EndDate { get; set; }

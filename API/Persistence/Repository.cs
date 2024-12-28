@@ -15,11 +15,18 @@ public class Repository : IdentityDbContext
     {
         base.OnModelCreating(modelBuilder);
 
-        // // Configure one-to-one relationship
-        // modelBuilder.Entity<EmployeeEntity>()
-        //     .HasOne(e => e.User)
-        //     .WithOne(u => u.Employee)
-        //     .HasForeignKey<EmployeeEntity>(e => e.UserId)
-        //     .OnDelete(DeleteBehavior.Cascade); // Cascade delete ensures cleanup
+        // Configure one-to-many relationship for TimeOffEntity
+        modelBuilder.Entity<TimeOffEntity>()
+            .HasOne(t => t.User)
+            .WithMany(u => u.TimeOffs)
+            .HasForeignKey(t => t.UserId)
+            .OnDelete(DeleteBehavior.Cascade);  // Cascade delete when user is deleted
+
+        // Configure one-to-many relationship for ShiftEntity
+        modelBuilder.Entity<ShiftEntity>()
+            .HasOne(s => s.User)
+            .WithMany(u => u.Shifts)
+            .HasForeignKey(s => s.UserId)
+            .OnDelete(DeleteBehavior.Cascade);  // Cascade delete when user is deleted
     }
 }

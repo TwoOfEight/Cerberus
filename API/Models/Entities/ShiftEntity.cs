@@ -9,6 +9,8 @@ public class ShiftEntity
     [StringLength(256)]
     public required Guid UserId { get; set; }
     
+    public UserEntity User { get; set; }  // Navigation property 
+    
     public DateTime StartTime { get; set; }
     
     public DateTime EndTime { get; set; }

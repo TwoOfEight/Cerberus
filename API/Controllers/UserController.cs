@@ -1,3 +1,4 @@
+using API.Models.Entities;
 using API.Persistence;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -19,4 +20,14 @@ public class UserController : Controller
         _repository = repository;
     }
 
+    [Authorize]
+    [HttpPost("AddTimeOff")]
+    [ProducesResponseType(StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> AddTimeOff([FromBody] TimeOffEntity timeOff, [FromQuery] Guid userId)
+    {
+        
+    }
 }
