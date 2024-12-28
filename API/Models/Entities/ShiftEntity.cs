@@ -1,9 +1,12 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace API.Models.Entities;
 
-public class WorkEntity
+public class ShiftEntity
 {
     public Guid Id { get; set; }
 
+    [StringLength(256)]
     public required Guid UserId { get; set; }
     
     public DateTime StartTime { get; set; }

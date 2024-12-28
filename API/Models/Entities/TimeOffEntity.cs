@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace API.Models.Entities;
 
-public class LeaveEntity
+public class TimeOffEntity
 {
     public Guid Id { get; set; }
     
