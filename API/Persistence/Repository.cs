@@ -9,8 +9,11 @@ public class Repository : IdentityDbContext
     public Repository(DbContextOptions<Repository> options) : base(options) { }
     
     public DbSet<UserEntity> AppUsers { get; set; }
-    public DbSet<EmployeeEntity> Employees { get; set; }
 
+    public DbSet<TimeOffEntity> TimeOffs { get; set; }
+    
+    public DbSet<ShiftEntity> Shifts { get; set; }
+    
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);

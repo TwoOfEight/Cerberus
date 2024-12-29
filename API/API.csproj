@@ -29,4 +29,8 @@
     <Folder Include="Services\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Remove="Controllers\EmployeeController.cs" />
+  </ItemGroup>
+
 </Project>
