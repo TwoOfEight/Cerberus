@@ -1,10 +1,10 @@
 namespace API.Models.Entities;
 
-public class ShiftEntity
+public class Shift
 {
     public string Id { get; set; } = string.Empty;
     public required string UserId { get; set; }
-    public required UserEntity User { get; set; }
+    public required AppUser AppUser { get; set; }
     public DateTime StartTime { get; set; }
     public DateTime EndTime { get; set; }
     public TimeSpan Duration => EndTime - StartTime;

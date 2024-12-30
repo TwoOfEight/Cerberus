@@ -1,4 +1,6 @@
+using API.Models.DTOs;
 using API.Models.Entities;
+using API.Models.Mappers;
 using API.Persistence;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -26,45 +28,24 @@ public class UserController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> AddTimeOff([FromBody] TimeOffEntity? timeOff, [FromQuery] string? userId)
+    public async Task<IActionResult> AddTimeOff([FromBody] TimeOffCreateDto? requestBody, [FromQuery] string? userId)
     {
         try
         {
-            _logger.LogInformation("Received AddTimeOff request. UserId: {UserId}", userId);
-
-            if (string.IsNullOrWhiteSpace(userId))
-            {
-                _logger.LogWarning("AddTimeOff request failed: UserId is null, empty, or whitespace.");
-                return BadRequest("User ID is required and cannot be null, empty, or whitespace.");
-            }
-
-            if (timeOff == null)
-            {
-                _logger.LogWarning("AddTimeOff request failed: TimeOff entity is null. UserId: {UserId}", userId);
-                return BadRequest("TimeOff entity cannot be null.");
-            }
-
-            _logger.LogInformation("Fetching user with UserId: {UserId} from the database.", userId);
+            if (string.IsNullOrWhiteSpace(userId)) return BadRequest("User ID is required and cannot be null, empty, or whitespace.");
+            if (requestBody == null) return BadRequest("TimeOff entity cannot be null.");
 
             var user = await _repository.AppUsers.FindAsync(userId);
-            if (user == null)
-            {
-                _logger.LogWarning("User not found for UserId: {UserId}.", userId);
-                return NotFound("User not found.");
-            }
+            if (user == null) return NotFound("User not found.");
 
-            _logger.LogInformation("User found. Adding TimeOff entity to the user. UserId: {UserId}", userId);
-
-            timeOff.Duration = timeOff.EndDate.Subtract(timeOff.StartDate);
+            var timeOff = TimeOffMapper.CastDtoToEntity(requestBody);
             user.TimeOffs.Add(timeOff);
             await _repository.SaveChangesAsync();
 
-            _logger.LogInformation("TimeOff successfully added for UserId: {UserId}.", userId);
             return Ok(timeOff);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error while adding time off. UserId: {UserId}", userId);
             return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while adding time off.");
         }
     }
@@ -83,7 +64,7 @@ public class UserController : ControllerBase
 
         if (output.Count == 0) return NotFound($"The user with id: {userId} had no time offs.");
 
-        return Ok(output);
+        return Ok(output.Select(TimeOffMapper.CastEntityToDto).ToList());
     }
 
     [Authorize]
@@ -91,7 +72,7 @@ public class UserController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<IActionResult> UpdateTimeOff([FromBody] TimeOffEntity request)
+    public async Task<IActionResult> UpdateTimeOff([FromBody] TimeOff request)
     {
         var timeOff = await _repository.TimeOffs.FindAsync(request.Id);
 

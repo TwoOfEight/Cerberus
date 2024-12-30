@@ -1,15 +1,14 @@
 using System.ComponentModel.DataAnnotations;
-using System.Text.Json.Serialization;
 
 namespace API.Models.Entities;
 
-public class TimeOffEntity
+public class TimeOff
 {
-    [Key] public string? Id { get; set; } = Guid.NewGuid().ToString();
+    public string? Id { get; set; } = Guid.NewGuid().ToString();
 
     public string? UserId { get; set; } = string.Empty;
 
-    [JsonIgnore] public UserEntity? User { get; set; }
+    public AppUser? User { get; set; }
 
     public DateTime StartDate { get; set; }
 

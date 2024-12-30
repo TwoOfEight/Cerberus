@@ -6,9 +6,9 @@ namespace API.Models.Mappers;
 
 public class UserMapper
 {
-    public static UserEntity DtoToUser(User input)
+    public static AppUser DtoToUser(User input)
     {
-        return new UserEntity
+        return new AppUser
         {
             // Id = input.Id,
             // UserName = input.UserName ?? string.Empty,
@@ -17,7 +17,7 @@ public class UserMapper
         };
     }
 
-    public static User EntityToDTO(UserEntity input)
+    public static User EntityToDTO(AppUser input)
     {
         return new User
         {
@@ -28,9 +28,9 @@ public class UserMapper
         };
     }
 
-    public static UserEntity RegisterReqToEntity(RegistrationRequest input)
+    public static AppUser RegisterReqToEntity(RegistrationRequest input)
     {
-        return new UserEntity
+        return new AppUser
         {
             // Email = input.Email,
             // Name = input.Name,

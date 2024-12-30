@@ -4,6 +4,7 @@ using API.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace API.Migrations
 {
     [DbContext(typeof(Repository))]
-    partial class RepositoryModelSnapshot : ModelSnapshot
+    [Migration("20241230210741_1.0.1")]
+    partial class _101
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -22,7 +25,7 @@ namespace API.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("API.Models.Entities.Shift", b =>
+            modelBuilder.Entity("API.Models.Entities.ShiftEntity", b =>
                 {
                     b.Property<string>("Id")
                         .HasColumnType("nvarchar(450)");
@@ -48,7 +51,7 @@ namespace API.Migrations
                     b.ToTable("Shifts");
                 });
 
-            modelBuilder.Entity("API.Models.Entities.TimeOff", b =>
+            modelBuilder.Entity("API.Models.Entities.TimeOffEntity", b =>
                 {
                     b.Property<string>("Id")
                         .HasColumnType("nvarchar(450)");
@@ -289,7 +292,7 @@ namespace API.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("API.Models.Entities.AppUser", b =>
+            modelBuilder.Entity("API.Models.Entities.UserEntity", b =>
                 {
                     b.HasBaseType("Microsoft.AspNetCore.Identity.IdentityUser");
 
@@ -300,23 +303,23 @@ namespace API.Migrations
                     b.Property<DateTime>("RefreshTokenExpiry")
                         .HasColumnType("datetime2");
 
-                    b.HasDiscriminator().HasValue("AppUser");
+                    b.HasDiscriminator().HasValue("UserEntity");
                 });
 
-            modelBuilder.Entity("API.Models.Entities.Shift", b =>
+            modelBuilder.Entity("API.Models.Entities.ShiftEntity", b =>
                 {
-                    b.HasOne("API.Models.Entities.AppUser", "AppUser")
+                    b.HasOne("API.Models.Entities.UserEntity", "User")
                         .WithMany("Shifts")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("AppUser");
+                    b.Navigation("User");
                 });
 
-            modelBuilder.Entity("API.Models.Entities.TimeOff", b =>
+            modelBuilder.Entity("API.Models.Entities.TimeOffEntity", b =>
                 {
-                    b.HasOne("API.Models.Entities.AppUser", "User")
+                    b.HasOne("API.Models.Entities.UserEntity", "User")
                         .WithMany("TimeOffs")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade);
@@ -375,7 +378,7 @@ namespace API.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("API.Models.Entities.AppUser", b =>
+            modelBuilder.Entity("API.Models.Entities.UserEntity", b =>
                 {
                     b.Navigation("Shifts");
 
