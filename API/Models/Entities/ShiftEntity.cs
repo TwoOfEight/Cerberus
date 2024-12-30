@@ -1,13 +1,11 @@
 
-using System.ComponentModel.DataAnnotations;
-
 namespace API.Models.Entities;
 
 public class ShiftEntity
 {
-    public string Id { get; set; }
+    public string Id { get; set; } = string.Empty;
     
-    public required Guid UserId { get; set; }
+    public required string UserId { get; set; }
     
     public required UserEntity User { get; set; }  
     
@@ -17,6 +15,5 @@ public class ShiftEntity
     
     public TimeSpan Duration => EndTime - StartTime; 
     
-    [StringLength(256)]
     public string TaskDescription { get; set; } = string.Empty;
 }

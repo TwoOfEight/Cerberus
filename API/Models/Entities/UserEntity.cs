@@ -4,8 +4,11 @@ namespace API.Models.Entities;
 
 public class UserEntity : IdentityUser
 {
-    public string RefreshToken { get; set; }
+    public string RefreshToken { get; set; } = string.Empty;
+
     public DateTime RefreshTokenExpiry { get; set; }
-    public ICollection<TimeOffEntity> TimeOffs { get; set; } = new List<TimeOffEntity>();
-    public ICollection<ShiftEntity> Shifts { get; set; } = new List<ShiftEntity>();
+
+    public ICollection<TimeOffEntity> TimeOffs { get; set; } = [];
+
+    public ICollection<ShiftEntity> Shifts { get; set; } = [];
 }

@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using AppContext = API.Persistence.AppContext;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,7 +14,7 @@ builder.Logging.AddFilter("Microsoft.EntityFrameworkCore.Database.Command", LogL
 
 builder.Services.AddControllers();
 
-builder.Services.AddDbContext<Repository>(options =>
+builder.Services.AddDbContext<AppContext>(options =>
 {
     var connection = builder.Configuration.GetConnectionString("Postgres") ?? throw new InvalidOperationException("Database connection string not configured");
     options.UseNpgsql(connection);
@@ -21,7 +22,7 @@ builder.Services.AddDbContext<Repository>(options =>
 
 builder.Services
     .AddIdentity<UserEntity, IdentityRole>(options => options.User.AllowedUserNameCharacters += " ")
-    .AddEntityFrameworkStores<Repository>()
+    .AddEntityFrameworkStores<AppContext>()
     .AddDefaultTokenProviders();
 
 var secret = builder.Configuration["JWT:Secret"] ?? throw new InvalidOperationException("Secret not configured");

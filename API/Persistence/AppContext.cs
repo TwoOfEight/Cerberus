@@ -4,9 +4,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API.Persistence;
 
-public class Repository : IdentityDbContext
+public class AppContext : IdentityDbContext
 {
-    public Repository(DbContextOptions<Repository> options) : base(options) { }
+    public AppContext(DbContextOptions<AppContext> options) : base(options) { }
     
     public DbSet<UserEntity> AppUsers { get; set; }
 

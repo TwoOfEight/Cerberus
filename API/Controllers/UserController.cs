@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
+using AppContext = API.Persistence.AppContext;
 
 namespace API.Controllers;
 
@@ -13,30 +14,30 @@ namespace API.Controllers;
 public class UserController : ControllerBase
 {
     private readonly ILogger<UserController> _logger;
-    private readonly Repository _repository;
+    private readonly AppContext _appContext;
 
-    public UserController(ILogger<UserController> logger, Repository repository)
+    public UserController(ILogger<UserController> logger, AppContext appContext)
     {
         _logger = logger;
-        _repository = repository;
+        _appContext = appContext;
     }
 
     [Authorize]
     [HttpPost("AddTimeOff")]
-    [ProducesResponseType(StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> AddTimeOff([FromBody] TimeOffEntity timeOff, [FromQuery] string userId)
+    public async Task<IActionResult> AddTimeOff([FromBody] TimeOffEntity timeOff, [FromQuery] string? userId)
     {
         try
-        { 
-            var timeOffEntry = await _repository.TimeOffs.AddAsync(timeOff);
-            var storedUser = await _repository.AppUsers.FindAsync(userId);
-            if (storedUser == null) return NotFound();
-            
-            storedUser.TimeOffs.Add();
-            
+        {
+            if (userId == null) return BadRequest();
+            var user = await _appContext.AppUsers.FindAsync(userId);
+            if (user == null) return NotFound();
+            user.TimeOffs.Add(timeOff);
+            await _appContext.SaveChangesAsync();
+            return Ok(user);
         }
         catch (Exception ex)
         {
@@ -53,7 +54,7 @@ public class UserController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> GetTimeOff(string id)
     {
-        var timeOff = await _repository.TimeOffs
+        var timeOff = await _appContext.TimeOffs
             .Include(t => t.User)
             .FirstOrDefaultAsync(t => t.Id == id);
 
@@ -71,7 +72,7 @@ public class UserController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> GetUserTimeOffs(string userId)
     {
-        var user = await _repository.AppUsers
+        var user = await _appContext.AppUsers
             .Include(u => u.TimeOffs)
             .FirstOrDefaultAsync(u => u.Id == userId);
 
@@ -93,15 +94,15 @@ public class UserController : ControllerBase
     {
         try
         {
-            var timeOff = await _repository.TimeOffs.FindAsync(id);
+            var timeOff = await _appContext.TimeOffs.FindAsync(id);
 
             if (timeOff == null)
             {
                 return NotFound("Time off not found.");
             }
 
-            _repository.TimeOffs.Remove(timeOff);
-            await _repository.SaveChangesAsync();
+            _appContext.TimeOffs.Remove(timeOff);
+            await _appContext.SaveChangesAsync();
 
             return Ok("Time off deleted successfully.");
         }

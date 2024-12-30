@@ -1,11 +1,12 @@
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace API.Models.Entities;
 
 public class TimeOffEntity
 {
-    public string Id { get; set; }
-    
+    public string Id { get; set; } = string.Empty;
+
     public required string UserId { get; set; }
     
     public required UserEntity User { get; set; } 
