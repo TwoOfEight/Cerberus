@@ -1,12 +1,11 @@
 using API.Models.Entities;
-using API.Persistence;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using AppContext = API.Persistence.AppContext;
+using Repository = API.Persistence.Repository;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,15 +13,15 @@ builder.Logging.AddFilter("Microsoft.EntityFrameworkCore.Database.Command", LogL
 
 builder.Services.AddControllers();
 
-builder.Services.AddDbContext<AppContext>(options =>
+builder.Services.AddDbContext<Repository>(options =>
 {
-    var connection = builder.Configuration.GetConnectionString("Postgres") ?? throw new InvalidOperationException("Database connection string not configured");
-    options.UseNpgsql(connection);
+    var connection = builder.Configuration.GetConnectionString("SQLServer") ?? throw new InvalidOperationException("Database connection string not configured");
+    options.UseSqlServer(connection);
 });
 
 builder.Services
     .AddIdentity<UserEntity, IdentityRole>(options => options.User.AllowedUserNameCharacters += " ")
-    .AddEntityFrameworkStores<AppContext>()
+    .AddEntityFrameworkStores<Repository>()
     .AddDefaultTokenProviders();
 
 var secret = builder.Configuration["JWT:Secret"] ?? throw new InvalidOperationException("Secret not configured");

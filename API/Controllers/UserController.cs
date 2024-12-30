@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
-using AppContext = API.Persistence.AppContext;
+using Repository = API.Persistence.Repository;
 
 namespace API.Controllers;
 
@@ -14,9 +14,9 @@ namespace API.Controllers;
 public class UserController : ControllerBase
 {
     private readonly ILogger<UserController> _logger;
-    private readonly AppContext _appContext;
+    private readonly Repository _appContext;
 
-    public UserController(ILogger<UserController> logger, AppContext appContext)
+    public UserController(ILogger<UserController> logger, Repository appContext)
     {
         _logger = logger;
         _appContext = appContext;
