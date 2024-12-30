@@ -8,7 +8,7 @@ public class UserMapper
 {
     public static UserEntity DtoToUser(User input)
     {
-        return new UserEntity()
+        return new UserEntity
         {
             // Id = input.Id,
             // UserName = input.UserName ?? string.Empty,
@@ -19,7 +19,7 @@ public class UserMapper
 
     public static User EntityToDTO(UserEntity input)
     {
-        return new User()
+        return new User
         {
             // Id = input.Id,
             // UserName = input.UserName ?? string.Empty,
@@ -30,7 +30,7 @@ public class UserMapper
 
     public static UserEntity RegisterReqToEntity(RegistrationRequest input)
     {
-        return new UserEntity()
+        return new UserEntity
         {
             // Email = input.Email,
             // Name = input.Name,

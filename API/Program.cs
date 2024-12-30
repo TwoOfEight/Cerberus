@@ -1,10 +1,9 @@
+using System.Text;
 using API.Models.Entities;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
-
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using System.Text;
 using Repository = API.Persistence.Repository;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -15,7 +14,8 @@ builder.Services.AddControllers();
 
 builder.Services.AddDbContext<Repository>(options =>
 {
-    var connection = builder.Configuration.GetConnectionString("SQLServer") ?? throw new InvalidOperationException("Database connection string not configured");
+    var connection = builder.Configuration.GetConnectionString("SQLServer") ??
+                     throw new InvalidOperationException("Database connection string not configured");
     options.UseSqlServer(connection);
 });
 
@@ -38,8 +38,10 @@ builder.Services
         options.SaveToken = true;
         options.TokenValidationParameters = new TokenValidationParameters
         {
-            ValidIssuer = builder.Configuration["JWT:ValidIssuer"] ?? throw new InvalidOperationException("ValidIssuer not configured"),
-            ValidAudience = builder.Configuration["JWT:ValidAudience"] ?? throw new InvalidOperationException("ValidAudience not configured"),
+            ValidIssuer = builder.Configuration["JWT:ValidIssuer"] ??
+                          throw new InvalidOperationException("ValidIssuer not configured"),
+            ValidAudience = builder.Configuration["JWT:ValidAudience"] ??
+                            throw new InvalidOperationException("ValidAudience not configured"),
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret)),
             ClockSkew = new TimeSpan(0, 0, 5)
         };
@@ -64,14 +66,14 @@ builder.Services.AddCors(options =>
     options.AddPolicy(developmentPolicy, p =>
     {
         p.AllowAnyOrigin()
-         .AllowAnyHeader()
-         .AllowAnyMethod();
+            .AllowAnyHeader()
+            .AllowAnyMethod();
     });
     options.AddPolicy(productionPolicy, p =>
     {
         p.AllowAnyOrigin()
-         .AllowAnyHeader()
-         .AllowAnyMethod();
+            .AllowAnyHeader()
+            .AllowAnyMethod();
     });
 });
 

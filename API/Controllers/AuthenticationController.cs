@@ -1,13 +1,13 @@
-﻿using API.Models.Authentication;
+﻿using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Security.Cryptography;
+using System.Text;
+using API.Models.Authentication;
 using API.Models.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Security.Cryptography;
-using System.Text;
 
 namespace API.Controllers;
 
@@ -19,7 +19,8 @@ public class AuthenticationController : Controller
     private readonly ILogger<AuthenticationController> _logger;
     private readonly UserManager<UserEntity> _userManager;
 
-    public AuthenticationController(UserManager<UserEntity> userManager, IConfiguration configuration, ILogger<AuthenticationController> logger)
+    public AuthenticationController(UserManager<UserEntity> userManager, IConfiguration configuration,
+        ILogger<AuthenticationController> logger)
     {
         _userManager = userManager;
         _configuration = configuration;
@@ -36,10 +37,7 @@ public class AuthenticationController : Controller
 
         var user = await _userManager.FindByNameAsync(model.Username);
 
-        if (user == null || !await _userManager.CheckPasswordAsync(user, model.Password))
-        {
-            return Unauthorized();
-        }
+        if (user == null || !await _userManager.CheckPasswordAsync(user, model.Password)) return Unauthorized();
 
         var token = GenerateJwt(model.Username);
 
@@ -52,11 +50,12 @@ public class AuthenticationController : Controller
 
         _logger.LogInformation("Login succeeded");
 
-        return Ok(new LoginResponse
+        return Ok(new AuthenticationResponse
         {
             JwtToken = new JwtSecurityTokenHandler().WriteToken(token),
             ExpirationDate = token.ValidTo,
-            RefreshToken = refreshToken
+            RefreshToken = refreshToken,
+            UserId = user.Id
         });
     }
 
@@ -70,27 +69,23 @@ public class AuthenticationController : Controller
 
         var principal = GetPrincipalFromExpiredToken(model.AccessToken);
 
-        if (principal?.Identity?.Name is null)
-        {
-            return Unauthorized();
-        }
+        if (principal?.Identity?.Name is null) return Unauthorized();
 
         var user = await _userManager.FindByNameAsync(principal.Identity.Name);
 
         if (user is null || user.RefreshToken != model.RefreshToken || user.RefreshTokenExpiry < DateTime.UtcNow)
-        {
             return Unauthorized();
-        }
 
         var token = GenerateJwt(principal.Identity.Name);
 
         _logger.LogInformation("Refresh succeeded");
 
-        return Ok(new LoginResponse
+        return Ok(new AuthenticationResponse
         {
             JwtToken = new JwtSecurityTokenHandler().WriteToken(token),
             ExpirationDate = token.ValidTo,
-            RefreshToken = model.RefreshToken
+            RefreshToken = model.RefreshToken,
+            UserId = user.Id
         });
     }
 
@@ -104,31 +99,23 @@ public class AuthenticationController : Controller
 
         var existingUser = await _userManager.FindByNameAsync(model.Username);
 
-        if (existingUser != null)
-        {
-            return Conflict("User already exists.");
-        }
+        if (existingUser != null) return Conflict("User already exists.");
 
         var newUser = new UserEntity
         {
             UserName = model.Username,
             Email = model.Email,
-            SecurityStamp = Guid.NewGuid().ToString(),
+            SecurityStamp = Guid.NewGuid().ToString()
         };
 
         var result = await _userManager.CreateAsync(newUser, model.Password);
 
-        if (result.Succeeded)
-        {
-            return Ok("User successfully created");
-        }
-        else
-        {
-            return StatusCode(
-                StatusCodes.Status500InternalServerError,
-                $"Failed to create user: {string.Join(" ", result.Errors.Select(e => e.Description))}"
-            );
-        }
+        if (result.Succeeded) return Ok("User successfully created");
+
+        return StatusCode(
+            StatusCodes.Status500InternalServerError,
+            $"Failed to create user: {string.Join(" ", result.Errors.Select(e => e.Description))}"
+        );
     }
 
     [Authorize]
@@ -171,15 +158,17 @@ public class AuthenticationController : Controller
     {
         var authClaims = new List<Claim>
         {
-            new Claim(ClaimTypes.Name, username),
-            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+            new(ClaimTypes.Name, username),
+            new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
         };
 
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Secret"] ?? throw new InvalidOperationException("Secret not configured")));
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Secret"] ??
+                                                                  throw new InvalidOperationException(
+                                                                      "Secret not configured")));
 
         var token = new JwtSecurityToken(
-            issuer: _configuration["JWT:ValidIssuer"],
-            audience: _configuration["JWT:ValidAudience"],
+            _configuration["JWT:ValidIssuer"],
+            _configuration["JWT:ValidAudience"],
             expires: DateTime.UtcNow.AddHours(3),
             claims: authClaims,
             signingCredentials: new SigningCredentials(key, SecurityAlgorithms.HmacSha256)
@@ -194,8 +183,10 @@ public class AuthenticationController : Controller
 
         var validation = new TokenValidationParameters
         {
-            ValidIssuer = _configuration["JWT:ValidIssuer"] ?? throw new InvalidOperationException("ValidIssuer not configured"),
-            ValidAudience = _configuration["JWT:ValidAudience"] ?? throw new InvalidOperationException("ValidAudience not configured"),
+            ValidIssuer = _configuration["JWT:ValidIssuer"] ??
+                          throw new InvalidOperationException("ValidIssuer not configured"),
+            ValidAudience = _configuration["JWT:ValidAudience"] ??
+                            throw new InvalidOperationException("ValidAudience not configured"),
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret)),
             ValidateLifetime = false
         };
