@@ -1,6 +1,6 @@
 ﻿namespace API.Models.DTOs;
 
-public class BreakCDto
+public class TimeOffCreate
 {
     public DateTime StartDate { get; set; }
     public DateTime EndDate { get; set; }

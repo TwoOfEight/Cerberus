@@ -1,6 +1,6 @@
 ﻿namespace API.Models.DTOs;
 
-public class BreakRDto
+public class TimeOff
 {
     public required string Id { get; set; }
     public required string UserId { get; set; }

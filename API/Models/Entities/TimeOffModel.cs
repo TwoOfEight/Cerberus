@@ -2,13 +2,13 @@ using System.ComponentModel.DataAnnotations;
 
 namespace API.Models.Entities;
 
-public class Break
+public class TimeOffModel
 {
     public string? Id { get; set; } = Guid.NewGuid().ToString();
 
     public string? UserId { get; set; } = string.Empty;
 
-    public AppUser? User { get; set; }
+    public UserModel? User { get; set; }
 
     public DateTime StartDate { get; set; }
 

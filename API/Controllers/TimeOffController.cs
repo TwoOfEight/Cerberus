@@ -10,12 +10,12 @@ namespace API.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class BreakController : ControllerBase
+public class TimeOffController : ControllerBase
 {
     private readonly Repository _repository;
     private readonly ILogger<UserController> _logger;
 
-    public BreakController(ILogger<UserController> logger, Repository repository)
+    public TimeOffController(ILogger<UserController> logger, Repository repository)
     {
         _logger = logger;
         _repository = repository;
@@ -28,7 +28,7 @@ public class BreakController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> AddTimeOff([FromBody] BreakCDto? requestBody, [FromQuery] string? userId)
+    public async Task<IActionResult> AddTimeOff([FromBody] TimeOffCreate? requestBody, [FromQuery] string? userId)
     {
         try
         {
@@ -36,13 +36,13 @@ public class BreakController : ControllerBase
             if (requestBody == null) return BadRequest("TimeOff entity cannot be null.");
 
             var user = await _repository.AppUsers.FindAsync(userId);
-            if (user == null) return NotFound("User not found.");
+            if (user is null) return NotFound("User not found.");
 
-            var timeOff = BreakMapper.CastDtoToEntity(requestBody);
+            var timeOff = TimeOffMapper.CreateRequestToModel(requestBody);
             user.TimeOffs.Add(timeOff);
             await _repository.SaveChangesAsync();
 
-            return Ok(timeOff);
+            return Ok(TimeOffMapper.ModelToDto(timeOff));
         }
         catch (Exception ex)
         {
@@ -51,7 +51,7 @@ public class BreakController : ControllerBase
     }
 
     [Authorize]
-    [HttpGet("GetTimeOff")]
+    [HttpGet("GetUserTimeOffs")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -64,7 +64,7 @@ public class BreakController : ControllerBase
 
         if (output.Count == 0) return NotFound($"The user with id: {userId} had no time offs.");
 
-        return Ok(output.Select(BreakMapper.CastEntityToDto).ToList());
+        return Ok(output.Select(TimeOffMapper.ModelToDto).ToList());
     }
 
     [Authorize]
@@ -72,36 +72,16 @@ public class BreakController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<IActionResult> UpdateTimeOff([FromBody] Break request)
+    public async Task<IActionResult> UpdateTimeOff([FromBody] TimeOff request)
     {
         var timeOff = await _repository.Breaks.FindAsync(request.Id);
-
         if (timeOff == null) return NotFound("The time off could not be found.");
 
-        timeOff.StartDate = request.StartDate;
-        timeOff.EndDate = request.EndDate;
-        timeOff.Duration = timeOff.EndDate.Subtract(timeOff.StartDate);
-        timeOff.Reason = request.Reason;
-        timeOff.Status = request.Status;
+        TimeOffMapper.UpdateModelFromDto(timeOff, request);
 
         await _repository.SaveChangesAsync();
 
-        return Ok(timeOff);
-    }
-
-    [Authorize]
-    [HttpGet("{userId}/TimeOffs")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<IActionResult> GetUserTimeOffs(string userId)
-    {
-        var user = await _repository.AppUsers
-            .Include(u => u.TimeOffs)
-            .FirstOrDefaultAsync(u => u.Id == userId);
-
-        if (user == null) return NotFound("User not found.");
-
-        return Ok(user.TimeOffs);
+        return Ok(TimeOffMapper.ModelToDto(timeOff));
     }
 
     [Authorize]

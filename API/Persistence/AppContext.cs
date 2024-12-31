@@ -10,24 +10,24 @@ public class Repository : IdentityDbContext
     {
     }
 
-    public DbSet<AppUser> AppUsers { get; set; }
+    public DbSet<UserModel> AppUsers { get; set; }
 
-    public DbSet<Break> Breaks { get; set; }
+    public DbSet<TimeOffModel> Breaks { get; set; }
 
-    public DbSet<Shift> Shifts { get; set; }
+    public DbSet<ShiftModel> Shifts { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
 
-        modelBuilder.Entity<Break>()
+        modelBuilder.Entity<TimeOffModel>()
             .HasOne(t => t.User)
             .WithMany(u => u.TimeOffs)
             .HasForeignKey(t => t.UserId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        modelBuilder.Entity<Shift>()
-            .HasOne(s => s.AppUser)
+        modelBuilder.Entity<ShiftModel>()
+            .HasOne(s => s.UserModel)
             .WithMany(u => u.Shifts)
             .HasForeignKey(s => s.UserId)
             .OnDelete(DeleteBehavior.Cascade);

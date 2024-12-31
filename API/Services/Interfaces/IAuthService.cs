@@ -4,7 +4,7 @@ namespace API.Services.Interfaces;
 
 public interface IAuthService
 {
-    string GenerateJwtToken(AppUser appUser);
+    string GenerateJwtToken(UserModel userModel);
 
     Task<bool> VerifyUserCredentials(string username, string password);
 }

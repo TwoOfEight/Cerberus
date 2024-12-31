@@ -6,7 +6,7 @@ namespace API.Services.Interfaces;
 
 public interface IUserService
 {
-    Task<AppUser> Create(RegistrationRequest request);
+    Task<UserModel> Create(RegistrationRequest request);
 
     void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt);
 
@@ -18,7 +18,7 @@ public interface IUserService
 
     Task<User> GetById(int id);
 
-    Task<AppUser> GetByUsername(string username);
+    Task<UserModel> GetByUsername(string username);
 
     Task<User> Update(User user);
 
