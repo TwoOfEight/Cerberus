@@ -12,7 +12,7 @@ public class Repository : IdentityDbContext
 
     public DbSet<UserModel> AppUsers { get; set; }
 
-    public DbSet<TimeOffModel> Breaks { get; set; }
+    public DbSet<TimeOffModel> TimeOffs { get; set; }
 
     public DbSet<ShiftModel> Shifts { get; set; }
 

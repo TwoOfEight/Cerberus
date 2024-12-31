@@ -5,7 +5,7 @@ namespace API.Models.Mappers;
 
 public static class TimeOffMapper
 {
-    public static TimeOffModel CreateRequestToModel(TimeOffCreate request)
+    public static TimeOffModel CastCreateRequestToModel(TimeOffCreate request)
     {
         ArgumentNullException.ThrowIfNull(request);
 
@@ -20,7 +20,7 @@ public static class TimeOffMapper
         };
     }
 
-    public static TimeOff ModelToDto(TimeOffModel timeOffModel)
+    public static TimeOff CastModelToDto(TimeOffModel timeOffModel)
     {
         ArgumentNullException.ThrowIfNull(timeOffModel);
         ArgumentNullException.ThrowIfNull(timeOffModel.Id);

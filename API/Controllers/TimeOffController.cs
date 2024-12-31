@@ -38,11 +38,11 @@ public class TimeOffController : ControllerBase
             var user = await _repository.AppUsers.FindAsync(userId);
             if (user is null) return NotFound("User not found.");
 
-            var timeOff = TimeOffMapper.CreateRequestToModel(requestBody);
+            var timeOff = TimeOffMapper.CastCreateRequestToModel(requestBody);
             user.TimeOffs.Add(timeOff);
             await _repository.SaveChangesAsync();
 
-            return Ok(TimeOffMapper.ModelToDto(timeOff));
+            return Ok(TimeOffMapper.CastModelToDto(timeOff));
         }
         catch (Exception ex)
         {
@@ -57,14 +57,14 @@ public class TimeOffController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> GetTimeOff([FromQuery] string userId)
     {
-        var output = await _repository.Breaks
+        var output = await _repository.TimeOffs
             .Include(t => t.User)
             .Where(t => t.User != null && t.User.Id == userId)
             .ToListAsync();
 
         if (output.Count == 0) return NotFound($"The user with id: {userId} had no time offs.");
 
-        return Ok(output.Select(TimeOffMapper.ModelToDto).ToList());
+        return Ok(output.Select(TimeOffMapper.CastModelToDto).ToList());
     }
 
     [Authorize]
@@ -74,33 +74,29 @@ public class TimeOffController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> UpdateTimeOff([FromBody] TimeOff request)
     {
-        var timeOff = await _repository.Breaks.FindAsync(request.Id);
+        var timeOff = await _repository.TimeOffs.FindAsync(request.Id);
         if (timeOff == null) return NotFound("The time off could not be found.");
-
         TimeOffMapper.UpdateModelFromDto(timeOff, request);
 
         await _repository.SaveChangesAsync();
 
-        return Ok(TimeOffMapper.ModelToDto(timeOff));
+        return Ok(TimeOffMapper.CastModelToDto(timeOff));
     }
 
     [Authorize]
-    [HttpDelete("DeleteTimeOff/{id}")]
+    [HttpDelete("DeleteTimeOff")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> DeleteTimeOff(string id)
+    public async Task<IActionResult> DeleteTimeOff([FromQuery] string id)
     {
         try
         {
-            var timeOff = await _repository.Breaks.FindAsync(id);
-
+            var timeOff = await _repository.TimeOffs.FindAsync(id);
             if (timeOff == null) return NotFound("Time off not found.");
-
-            _repository.Breaks.Remove(timeOff);
+            _repository.TimeOffs.Remove(timeOff);
             await _repository.SaveChangesAsync();
-
             return Ok("Time off deleted successfully.");
         }
         catch (Exception ex)
@@ -109,4 +105,6 @@ public class TimeOffController : ControllerBase
             return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while deleting time off.");
         }
     }
+
+
 }
