@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace API.Models.Entities;
 
-public class TimeOff
+public class Break
 {
     public string? Id { get; set; } = Guid.NewGuid().ToString();
 

@@ -8,7 +8,7 @@ public class AppUser : IdentityUser
 
     public DateTime RefreshTokenExpiry { get; set; }
 
-    public ICollection<TimeOff> TimeOffs { get; set; } = [];
+    public ICollection<Break> TimeOffs { get; set; } = [];
 
     public ICollection<Shift> Shifts { get; set; } = [];
 }

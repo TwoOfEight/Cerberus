@@ -12,7 +12,7 @@ public class Repository : IdentityDbContext
 
     public DbSet<AppUser> AppUsers { get; set; }
 
-    public DbSet<TimeOff> TimeOffs { get; set; }
+    public DbSet<Break> Breaks { get; set; }
 
     public DbSet<Shift> Shifts { get; set; }
 
@@ -20,7 +20,7 @@ public class Repository : IdentityDbContext
     {
         base.OnModelCreating(modelBuilder);
 
-        modelBuilder.Entity<TimeOff>()
+        modelBuilder.Entity<Break>()
             .HasOne(t => t.User)
             .WithMany(u => u.TimeOffs)
             .HasForeignKey(t => t.UserId)
