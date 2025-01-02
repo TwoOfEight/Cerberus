@@ -1,4 +1,5 @@
 ﻿using API.Models.DTOs;
+using API.Models.Entities;
 using API.Models.Mappers;
 using API.Persistence;
 using API.Services;
@@ -12,8 +13,8 @@ namespace API.Controllers;
 [ApiController]
 public class ReportController : ControllerBase
 {
-    private readonly Repository _repository;
     private readonly ILogger<UserController> _logger;
+    private readonly Repository _repository;
 
     public ReportController(ILogger<UserController> logger, Repository repository)
     {
@@ -48,58 +49,69 @@ public class ReportController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<IActionResult> GetDailyUserReport([FromQuery] string userId, [FromQuery] int month, [FromQuery] int year)
+    public async Task<IActionResult> GetDailyUserReport([FromQuery] string userId, [FromQuery] int month,
+        [FromQuery] int year)
     {
-        if (month < 1 || month > 12) return BadRequest("Invalid month. Please provide a value between 1 and 12.");
+        if (month < 1 || month > 12)
+            return BadRequest("Invalid month. Please provide a value between 1 and 12.");
 
-        List<DateTime> days = ReportService.GetDaysInMonth(month, year);
+        var days = ReportService.GetDaysInMonth(month, year);
 
         // Fetch time-offs for the user in the specified month and year
         var timeOffs = await _repository.TimeOffs
-            .Where(b => b.UserId == userId && b.StartDate.Year == year && b.StartDate.Month == month)
+            .Where(timeOff => timeOff.UserId == userId && timeOff.StartDate.Year == year)
             .ToListAsync();
 
-        if (!timeOffs.Any()) return NotFound($"The user with id: {userId} had no time offs in month {month}.");
+        if (!timeOffs.Any())
+            return NotFound($"The user with id: {userId} had no time offs in month {month}.");
 
-        // Dictionary to hold daily time-off hours
-        var dailyTimeOffHours = new Dictionary<DateTime, double>();
+        // Create a list of DailyReport objects
+        var dailyReports = new List<DailyReport>();
 
-        // Initialize daily hours with 0
+        // Populate the reports
         foreach (var day in days)
         {
-            dailyTimeOffHours[day] = 0;
+            var dailyReport = GetDailyReport(day, timeOffs);
+
+            dailyReports.Add(dailyReport);
         }
 
-        // Calculate hours for each day
-        foreach (var day in days)
+        return Ok(dailyReports);
+    }
+
+    private DailyReport GetDailyReport(DateTime day, List<TimeOffModel> timeOffs)
+    {
+        var dailyReport = new DailyReport
         {
-            foreach (var timeOff in timeOffs)
+            date = day,
+            timeOffHours = 0,
+            workHours = 8, // Assuming a standard workday of 8 hours
+            timeOffReason = string.Empty
+        };
+
+        foreach (var timeOff in timeOffs)
+        {
+            if (day >= timeOff.StartDate.Date && day <= timeOff.EndDate.Date)
             {
-                if (day >= timeOff.StartDate.Date && day <= timeOff.EndDate.Date)
+                // Calculate the actual overlap
+                var startOfDay = day.Date;
+                var endOfDay = day.Date.AddDays(1).AddTicks(-1);
+
+                var actualStart = timeOff.StartDate > startOfDay ? timeOff.StartDate : startOfDay;
+                var actualEnd = timeOff.EndDate < endOfDay ? timeOff.EndDate : endOfDay;
+
+                if (actualStart < actualEnd)
                 {
-                    // Calculate hours for the day
-                    var startOfDay = day.Date;
-                    var endOfDay = day.Date.AddDays(1).AddTicks(-1);
+                    var timeOffHours = (actualEnd - actualStart).TotalHours;
 
-                    // Determine actual start and end for the current day
-                    var actualStart = timeOff.StartDate > startOfDay ? timeOff.StartDate : startOfDay;
-                    var actualEnd = timeOff.EndDate < endOfDay ? timeOff.EndDate : endOfDay;
-
-                    // Add the hours to the day's total
-                    dailyTimeOffHours[day] += (actualEnd - actualStart).TotalHours;
+                    // Update the daily report
+                    dailyReport.timeOffHours += (int)timeOffHours;
+                    dailyReport.workHours -= (int)timeOffHours;
+                    dailyReport.timeOffReason = timeOff.Reason;
                 }
             }
         }
 
-        // Format the response
-        var result = dailyTimeOffHours
-            .Select(kvp => new
-            {
-                Date = kvp.Key.ToString("yyyy-MM-dd"),
-                TimeOffHours = kvp.Value
-            })
-            .ToList();
-
-        return Ok(result);
+        return dailyReport;
     }
 }
