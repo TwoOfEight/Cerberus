@@ -15,7 +15,7 @@ public static class TimeOffMapper
             Id = Guid.NewGuid().ToString(),
             StartDate = request.StartDate,
             EndDate = request.EndDate,
-            Description = request.Reason,
+            Description = request.Description,
             Status = request.Status
         };
     }
@@ -32,7 +32,7 @@ public static class TimeOffMapper
             UserId = timeOff.UserId,
             StartDate = timeOff.StartDate,
             EndDate = timeOff.EndDate,
-            Reason = timeOff.Description,
+            Description = timeOff.Description,
             Status = timeOff.Status
         };
     }
@@ -43,7 +43,7 @@ public static class TimeOffMapper
 
         entry.StartDate = dto.StartDate;
         entry.EndDate = dto.EndDate;
-        entry.Description = dto.Reason;
+        entry.Description = dto.Description;
         entry.Status = dto.Status;
 
         return entry;
