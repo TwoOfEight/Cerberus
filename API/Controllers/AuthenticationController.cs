@@ -17,9 +17,9 @@ public class AuthenticationController : Controller
 {
     private readonly IConfiguration _configuration;
     private readonly ILogger<AuthenticationController> _logger;
-    private readonly UserManager<UserModel> _userManager;
+    private readonly UserManager<AppUser> _userManager;
 
-    public AuthenticationController(UserManager<UserModel> userManager, IConfiguration configuration,
+    public AuthenticationController(UserManager<AppUser> userManager, IConfiguration configuration,
         ILogger<AuthenticationController> logger)
     {
         _userManager = userManager;
@@ -101,7 +101,7 @@ public class AuthenticationController : Controller
 
         if (existingUser != null) return Conflict("User already exists.");
 
-        var newUser = new UserModel
+        var newUser = new AppUser
         {
             UserName = model.Username,
             Email = model.Email,

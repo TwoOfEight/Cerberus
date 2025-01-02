@@ -1,51 +1,49 @@
 ﻿using API.Models.DTOs;
 using API.Models.Entities;
+using TimeOff = API.Models.Entities.TimeOff;
 
 namespace API.Models.Mappers;
 
 public static class TimeOffMapper
 {
-    public static TimeOffModel CastCreateRequestToModel(TimeOffCreate request)
+    public static TimeOff CastCreateRequestToModel(TimeOffCDto request)
     {
         ArgumentNullException.ThrowIfNull(request);
 
-        return new TimeOffModel
+        return new TimeOff
         {
             Id = Guid.NewGuid().ToString(),
             StartDate = request.StartDate,
             EndDate = request.EndDate,
-            Duration = request.EndDate.Subtract(request.StartDate),
-            Reason = request.Reason,
+            Description = request.Reason,
             Status = request.Status
         };
     }
 
-    public static TimeOff CastModelToDto(TimeOffModel timeOffModel)
+    public static DTOs.TimeOffDto CastModelToDto(TimeOff timeOff)
     {
-        ArgumentNullException.ThrowIfNull(timeOffModel);
-        ArgumentNullException.ThrowIfNull(timeOffModel.Id);
-        ArgumentNullException.ThrowIfNull(timeOffModel.UserId);
+        ArgumentNullException.ThrowIfNull(timeOff);
+        ArgumentNullException.ThrowIfNull(timeOff.Id);
+        ArgumentNullException.ThrowIfNull(timeOff.UserId);
 
-        return new TimeOff
+        return new DTOs.TimeOffDto
         {
-            Id = timeOffModel.Id,
-            UserId = timeOffModel.UserId,
-            StartDate = timeOffModel.StartDate,
-            EndDate = timeOffModel.EndDate,
-            Duration = timeOffModel.Duration,
-            Reason = timeOffModel.Reason,
-            Status = timeOffModel.Status
+            Id = timeOff.Id,
+            UserId = timeOff.UserId,
+            StartDate = timeOff.StartDate,
+            EndDate = timeOff.EndDate,
+            Reason = timeOff.Description,
+            Status = timeOff.Status
         };
     }
 
-    public static TimeOffModel UpdateModelFromDto(TimeOffModel entry, TimeOff dto)
+    public static TimeOff UpdateModelFromDto(TimeOff entry, DTOs.TimeOffDto dto)
     {
         if (dto.EndDate <= dto.StartDate) throw new ArgumentException("EndDate must be after StartDate.");
 
         entry.StartDate = dto.StartDate;
         entry.EndDate = dto.EndDate;
-        entry.Duration = dto.EndDate.Subtract(dto.StartDate);
-        entry.Reason = dto.Reason;
+        entry.Description = dto.Reason;
         entry.Status = dto.Status;
 
         return entry;

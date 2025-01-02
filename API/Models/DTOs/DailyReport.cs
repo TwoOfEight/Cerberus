@@ -2,8 +2,8 @@
 
 public class DailyReport
 {
-    public DateTime date;
-    public int timeOffHours;
-    public int workHours;
-    public string timeOffReason;
+    public DateTime Date { get; set; }
+    public int TimeOffHours { get; set; }
+    public int WorkHours { get; set; }
+    public string TimeOffReason { get; set; }
 }

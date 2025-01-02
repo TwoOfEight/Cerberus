@@ -6,6 +6,7 @@ using API.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using TimeOff = API.Models.Entities.TimeOff;
 
 namespace API.Controllers;
 
@@ -72,21 +73,21 @@ public class ReportController : ControllerBase
         foreach (var day in days)
         {
             var dailyReport = GetDailyReport(day, timeOffs);
-
+            _logger.LogInformation($"Getting daily report: {dailyReport} for day {day}.");
             dailyReports.Add(dailyReport);
         }
 
         return Ok(dailyReports);
     }
 
-    private DailyReport GetDailyReport(DateTime day, List<TimeOffModel> timeOffs)
+    private DailyReport GetDailyReport(DateTime day, List<TimeOff> timeOffs)
     {
         var dailyReport = new DailyReport
         {
-            date = day,
-            timeOffHours = 0,
-            workHours = 8, // Assuming a standard workday of 8 hours
-            timeOffReason = string.Empty
+            Date = day,
+            TimeOffHours = 0,
+            WorkHours = 8, // Assuming a standard workday of 8 hours
+            TimeOffReason = string.Empty
         };
 
         foreach (var timeOff in timeOffs)
@@ -105,9 +106,9 @@ public class ReportController : ControllerBase
                     var timeOffHours = (actualEnd - actualStart).TotalHours;
 
                     // Update the daily report
-                    dailyReport.timeOffHours += (int)timeOffHours;
-                    dailyReport.workHours -= (int)timeOffHours;
-                    dailyReport.timeOffReason = timeOff.Reason;
+                    dailyReport.TimeOffHours += (int)timeOffHours;
+                    dailyReport.WorkHours -= (int)timeOffHours;
+                    dailyReport.TimeOffReason = timeOff.Description;
                 }
             }
         }

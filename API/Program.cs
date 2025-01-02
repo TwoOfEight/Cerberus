@@ -20,7 +20,7 @@ builder.Services.AddDbContext<Repository>(options =>
 });
 
 builder.Services
-    .AddIdentity<UserModel, IdentityRole>(options => options.User.AllowedUserNameCharacters += " ")
+    .AddIdentity<AppUser, IdentityRole>(options => options.User.AllowedUserNameCharacters += " ")
     .AddEntityFrameworkStores<Repository>()
     .AddDefaultTokenProviders();
 

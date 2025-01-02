@@ -2,6 +2,6 @@
 
 public class MonthlyReport
 {
-   public List<Shift>? Shifts { get; set; }
-   public List<TimeOff>? TimeOffs { get; set; }
+   public List<ShiftDto>? Shifts { get; set; }
+   public List<TimeOffDto>? TimeOffs { get; set; }
 }
