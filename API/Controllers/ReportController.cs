@@ -45,74 +45,92 @@ public class ReportController : ControllerBase
         return Ok(output);
     }
 
-    [Authorize]
-    [HttpGet("GetUserDailyReport")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<IActionResult> GetDailyUserReport([FromQuery] string userId, [FromQuery] int month,
-        [FromQuery] int year)
+[Authorize]
+[HttpGet("GetUserDailyReport")]
+[ProducesResponseType(StatusCodes.Status200OK)]
+[ProducesResponseType(StatusCodes.Status404NotFound)]
+[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+public async Task<IActionResult> GetDailyUserReport([FromQuery] string userId, [FromQuery] int month,
+    [FromQuery] int year)
+{
+    if (month < 1 || month > 12)
+        return BadRequest("Invalid month. Please provide a value between 1 and 12.");
+
+    var days = ReportService.GetDaysInMonth(month, year);
+
+    // Fetch time-offs for the user in the specified month and year
+    var timeOffs = await _repository.TimeOffs
+        .Where(timeOff => timeOff.UserId == userId && timeOff.StartDate.Year == year)
+        .ToListAsync();
+
+    if (!timeOffs.Any())
+        return NotFound($"The user with id: {userId} had no time offs in month {month}.");
+
+    // Create a list of DailyReport objects
+    var dailyReports = new List<DailyReport>();
+
+    // Populate the reports
+    foreach (var day in days)
     {
-        if (month < 1 || month > 12)
-            return BadRequest("Invalid month. Please provide a value between 1 and 12.");
+        var dailyReport = GetDailyReport(day, timeOffs);
+        _logger.LogInformation($"Getting daily report: {dailyReport} for day {day}.");
 
-        var days = ReportService.GetDaysInMonth(month, year);
-
-        // Fetch time-offs for the user in the specified month and year
-        var timeOffs = await _repository.TimeOffs
-            .Where(timeOff => timeOff.UserId == userId && timeOff.StartDate.Year == year)
+        // Fetch shifts for the user on this day
+        var shifts = await _repository.Shifts
+            .Where(shift => shift.UserId == userId && shift.StartDate.Date == day.Date)
             .ToListAsync();
 
-        if (!timeOffs.Any())
-            return NotFound($"The user with id: {userId} had no time offs in month {month}.");
-
-        // Create a list of DailyReport objects
-        var dailyReports = new List<DailyReport>();
-
-        // Populate the reports
-        foreach (var day in days)
+        // Add shifts to the daily report
+        foreach (var shift in shifts)
         {
-            var dailyReport = GetDailyReport(day, timeOffs);
-            _logger.LogInformation($"Getting daily report: {dailyReport} for day {day}.");
-            dailyReports.Add(dailyReport);
+            if (dailyReport.WorkHours == default)
+                dailyReport.WorkHours = 8; // Assuming a standard workday of 8 hours
+
+            var timeOffHours = (int)(shift.StartDate - shift.EndDate).TotalHours;
+            var workHours = 8 - timeOffHours;
+
+            dailyReport.WorkHours += workHours;
+            dailyReport.TimeOffHours += timeOffHours;
         }
 
-        return Ok(dailyReports);
+        dailyReports.Add(dailyReport);
     }
 
-    private DailyReport GetDailyReport(DateTime day, List<TimeOff> timeOffs)
+    return Ok(dailyReports);
+}
+
+private DailyReport GetDailyReport(DateTime day, List<TimeOff> timeOffs)
+{
+    var dailyReport = new DailyReport
     {
-        var dailyReport = new DailyReport
-        {
-            Date = day,
-            TimeOffHours = 0,
-            WorkHours = 8, // Assuming a standard workday of 8 hours
-            TimeOffReason = string.Empty
-        };
+        Date = day,
+        TimeOffHours = 0,
+        WorkHours = 8, // Assuming a standard workday of 8 hours
+        TimeOffReason = string.Empty
+    };
 
-        foreach (var timeOff in timeOffs)
+    foreach (var timeOff in timeOffs)
+    {
+        if (day >= timeOff.StartDate.Date && day <= timeOff.EndDate.Date)
         {
-            if (day >= timeOff.StartDate.Date && day <= timeOff.EndDate.Date)
+            var startOfDay = day.Date;
+            var endOfDay = day.Date.AddDays(1).AddTicks(-1);
+
+            var actualStart = timeOff.StartDate > startOfDay ? timeOff.StartDate : startOfDay;
+            var actualEnd = timeOff.EndDate < endOfDay ? timeOff.EndDate : endOfDay;
+
+            if (actualStart < actualEnd)
             {
-                // Calculate the actual overlap
-                var startOfDay = day.Date;
-                var endOfDay = day.Date.AddDays(1).AddTicks(-1);
+                var timeOffHours = (actualEnd - actualStart).TotalHours;
 
-                var actualStart = timeOff.StartDate > startOfDay ? timeOff.StartDate : startOfDay;
-                var actualEnd = timeOff.EndDate < endOfDay ? timeOff.EndDate : endOfDay;
-
-                if (actualStart < actualEnd)
-                {
-                    var timeOffHours = (actualEnd - actualStart).TotalHours;
-
-                    // Update the daily report
-                    dailyReport.TimeOffHours += (int)timeOffHours;
-                    dailyReport.WorkHours -= (int)timeOffHours;
-                    dailyReport.TimeOffReason = timeOff.Description;
-                }
+                // Update the daily report
+                dailyReport.TimeOffHours += (int)timeOffHours;
+                dailyReport.WorkHours -= (int)timeOffHours;
+                dailyReport.TimeOffReason = timeOff.Description;
             }
         }
-
-        return dailyReport;
     }
+
+    return dailyReport;
+}
 }
